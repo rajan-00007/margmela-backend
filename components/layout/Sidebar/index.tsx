@@ -1,0 +1,133 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import {
+  SidebarContainer,
+  Backdrop,
+  MobileCloseButton,
+  BrandHeader,
+  BrandLogoWrapper,
+  BrandIndicator,
+  BrandTitle,
+  BrandBadge,
+  NavScrollArea,
+  NavLink,
+  FooterContainer,
+  LogoutButton,
+  RestrictedWrapper,
+} from './styled';
+
+interface SidebarProps {
+  token: string | null;
+  logout: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ token, logout, isOpen, onClose }) => {
+  const pathname = usePathname() || '';
+
+  const isTabActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
+
+  const navItems = [
+    {
+      name: 'Events Manager',
+      path: '/events',
+      icon: (
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Route Graph Mapper',
+      path: '/routes',
+      icon: (
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Bundles & Publishing',
+      path: '/bundles',
+      icon: (
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Broadcast Alerts',
+      path: '/send-notification',
+      icon: (
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <>
+      {isOpen && <Backdrop onClick={onClose} />}
+      <SidebarContainer $isOpen={isOpen}>
+        {/* Mobile Close Button */}
+        <MobileCloseButton onClick={onClose} title="Close Menu">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </MobileCloseButton>
+
+        {/* Brand Header */}
+        <BrandHeader>
+          <BrandLogoWrapper>
+            <BrandIndicator />
+            <BrandTitle>MelaMarg Admin</BrandTitle>
+          </BrandLogoWrapper>
+          <BrandBadge>Suite</BrandBadge>
+        </BrandHeader>
+
+        {/* Navigation Links */}
+        <NavScrollArea>
+          {navItems.map((item) => {
+            const active = isTabActive(item.path);
+            return (
+              <Link key={item.path} href={item.path} passHref legacyBehavior>
+                <NavLink $active={active}>
+                  {item.icon}
+                  <span>{item.name}</span>
+                </NavLink>
+              </Link>
+            );
+          })}
+        </NavScrollArea>
+
+        {/* Session Footer */}
+        <FooterContainer>
+          {token ? (
+            <LogoutButton onClick={logout}>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Logout</span>
+            </LogoutButton>
+          ) : (
+            <RestrictedWrapper>
+              <span>🔒 Access Restricted</span>
+            </RestrictedWrapper>
+          )}
+        </FooterContainer>
+      </SidebarContainer>
+    </>
+  );
+};
+
+export default Sidebar;
