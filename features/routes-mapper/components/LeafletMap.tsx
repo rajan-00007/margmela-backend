@@ -412,9 +412,11 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
           (Math.abs(node.latitude - p.latitude) < 0.000001 && Math.abs(node.longitude - p.longitude) < 0.000001)
       );
       
-      let markerColor = node.is_entrance ? '#8b5cf6' : '#10b981';
-      let borderStyle = node.is_entrance ? 'border: 2px dashed white;' : 'border: 2px solid white;';
-      let shadowStyle = node.is_entrance ? 'box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);' : 'box-shadow: 0 0 10px rgba(0,0,0,0.5);';
+      let markerColor = node.is_entrance ? '#8b5cf6' : (node.is_parking ? '#3b82f6' : '#10b981');
+      let borderStyle = (node.is_entrance || node.is_parking) ? 'border: 2px dashed white;' : 'border: 2px solid white;';
+      let shadowStyle = node.is_entrance 
+        ? 'box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);' 
+        : (node.is_parking ? 'box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);' : 'box-shadow: 0 0 10px rgba(0,0,0,0.5);');
       
       if (isPoiSelectedNode) {
         markerColor = '#06b6d4';
@@ -505,8 +507,8 @@ export const LeafletMap: React.FC<LeafletMapProps> = ({
           </div>
         `;
       } else {
-        const labelBorderColor = node.is_entrance ? '#8b5cf6' : 'rgba(63, 63, 70, 0.4)';
-        const labelText = node.is_entrance ? `${node.name} 🚪` : node.name;
+        const labelBorderColor = node.is_entrance ? '#8b5cf6' : (node.is_parking ? '#3b82f6' : 'rgba(63, 63, 70, 0.4)');
+        const labelText = node.is_entrance ? `${node.name} 🚪` : (node.is_parking ? `${node.name} 🅿️` : node.name);
 
         customHtml = `
           <div style="

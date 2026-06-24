@@ -10,6 +10,7 @@ export interface NodeItem {
   node_type?: string;
   poi_id?: string | null;
   is_entrance?: boolean;
+  is_parking?: boolean;
 }
 
 export interface EdgeItem {
@@ -180,6 +181,7 @@ export const useRouteGraph = () => {
           node_type: n.node_type || 'path',
           poi_id: n.poi_id || null,
           is_entrance: !!n.is_entrance,
+          is_parking: !!n.is_parking,
         }));
 
         const loadedEdges = dbEdges.map((e: any) => ({
@@ -221,6 +223,7 @@ export const useRouteGraph = () => {
           node_type: n.node_type || 'path',
           poi_id: n.poi_id || null,
           is_entrance: !!n.is_entrance,
+          is_parking: !!n.is_parking,
         })),
         edges: edges.map((e) => ({
           startNodeId: e.startNodeId,

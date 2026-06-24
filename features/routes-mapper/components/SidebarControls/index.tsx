@@ -246,6 +246,21 @@ export const SidebarControls: React.FC<SidebarControlsProps> = ({
                             <span>Entrance Point 🚪</span>
                           </EntranceLabel>
 
+                          <EntranceLabel>
+                            <input
+                              type="checkbox"
+                              checked={!!node.is_parking}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setNodes((prev) =>
+                                  prev.map((n) => (n.id === node.id ? { ...n, is_parking: checked } : n))
+                                );
+                              }}
+                              style={{ cursor: 'pointer' }}
+                            />
+                            <span>Parking Point 🅿️</span>
+                          </EntranceLabel>
+
                           {linkedPoi ? (
                             <PoiAnchorBadge>
                               ✨ POI: {linkedPoi.name_en}

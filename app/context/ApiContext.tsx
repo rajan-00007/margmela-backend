@@ -102,11 +102,14 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSelectedEvent = (event: any | null) => {
     setSelectedEvent(event);
+    setSelectedEventIdState(event ? event.id : '');
     if (typeof window !== 'undefined') {
       if (event) {
         localStorage.setItem('mm_test_event', JSON.stringify(event));
+        localStorage.setItem('mm_test_event_id', event.id);
       } else {
         localStorage.removeItem('mm_test_event');
+        localStorage.removeItem('mm_test_event_id');
       }
     }
   };
