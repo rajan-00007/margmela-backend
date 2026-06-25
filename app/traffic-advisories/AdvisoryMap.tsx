@@ -33,6 +33,10 @@ interface AdvisoryMapProps {
   pickMode: 'start' | 'end' | 'toggle' | 'draw';
   lastDrawNodeId: string | null;
   onNodeClick: (nodeId: string) => void;
+  eventZones?: any[];
+  selectedZoneIds?: string[];
+  setSelectedZoneIds?: React.Dispatch<React.SetStateAction<string[]>>;
+  advisoryType?: 'zone' | 'road';
 }
 
 export const AdvisoryMap: React.FC<AdvisoryMapProps> = ({
@@ -48,6 +52,10 @@ export const AdvisoryMap: React.FC<AdvisoryMapProps> = ({
   pickMode,
   lastDrawNodeId,
   onNodeClick,
+  eventZones = [],
+  selectedZoneIds = [],
+  setSelectedZoneIds,
+  advisoryType = 'road',
 }) => {
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const mapRef = useRef<any>(null);
@@ -167,6 +175,48 @@ export const AdvisoryMap: React.FC<AdvisoryMapProps> = ({
     layersRef.current = [];
 
     const newLayers: any[] = [];
+
+    // Draw clickable zone polygons if in zone mode
+    if (advisoryType === 'zone') {
+      eventZones.forEach((zone) => {
+        const boundary = typeof zone.boundary === 'string' ? JSON.parse(zone.boundary) : zone.boundary;
+        if (!Array.isArray(boundary) || boundary.length < 3) return;
+
+        const latlngs = boundary.map((p: any) => [
+          p.lat !== undefined ? Number(p.lat) : Number(p.latitude),
+          p.lng !== undefined ? Number(p.lng) : Number(p.longitude)
+        ]);
+
+        const isSelected = selectedZoneIds.includes(zone.id);
+        const polygon = L.polygon(latlngs, {
+          color: isSelected ? '#3b82f6' : '#9ca3af',
+          fillColor: isSelected ? '#3b82f6' : '#d1d5db',
+          fillOpacity: isSelected ? 0.35 : 0.08,
+          weight: isSelected ? 3 : 1.5,
+          dashArray: isSelected ? undefined : '5, 5'
+        }).addTo(map);
+
+        polygon.bindTooltip(zone.name, {
+          permanent: true,
+          direction: 'center',
+          className: isSelected ? 'zone-tooltip-selected' : 'zone-tooltip-unselected'
+        });
+
+        polygon.on('click', (e: any) => {
+          L.DomEvent.stopPropagation(e);
+          if (setSelectedZoneIds) {
+            setSelectedZoneIds((prev) =>
+              isSelected ? prev.filter((id) => id !== zone.id) : [...prev, zone.id]
+            );
+          }
+        });
+
+        newLayers.push(polygon);
+      });
+
+      layersRef.current = newLayers;
+      return;
+    }
 
     // 1. Draw Route Edges
     edges.forEach((edge) => {
@@ -313,7 +363,7 @@ export const AdvisoryMap: React.FC<AdvisoryMapProps> = ({
     });
 
     layersRef.current = newLayers;
-  }, [leafletLoaded, nodes, edges, startNodeId, endNodeId, advisoryEdges, pickMode, lastDrawNodeId, onNodeClick]);
+  }, [leafletLoaded, nodes, edges, startNodeId, endNodeId, advisoryEdges, pickMode, lastDrawNodeId, onNodeClick, eventZones, selectedZoneIds, setSelectedZoneIds, advisoryType]);
 
   return (
     <div id="advisory-map-canvas" style={{ width: '100%', height: '100%', minHeight: '350px' }} />

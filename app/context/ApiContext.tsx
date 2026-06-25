@@ -158,12 +158,20 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
+    const headers = { ...(options.headers || {}) };
+    // If the body is a FormData instance (e.g. image upload), we must set the Content-Type
+    // to undefined to override the Axios instance's default 'application/json' header.
+    // This allows the browser/Axios to automatically format it as 'multipart/form-data' with the correct boundary.
+    if (body instanceof FormData) {
+      headers['Content-Type'] = undefined;
+    }
+
     try {
       const response = await api.request({
         url,
         method,
         data: body,
-        headers: options.headers || {},
+        headers,
       });
       return response;
     } catch (err: any) {
