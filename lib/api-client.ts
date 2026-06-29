@@ -86,12 +86,8 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       return new Promise((resolve, reject) => {
-        let storedRefreshToken = '';
-        if (typeof window !== 'undefined') {
-          storedRefreshToken = localStorage.getItem('mm_test_refresh_token') || '';
-        }
         axios
-          .post(API_ENDPOINTS.auth.refreshToken, { refreshToken: storedRefreshToken }, { withCredentials: true })
+          .post(API_ENDPOINTS.auth.refreshToken, {}, { withCredentials: true })
           .then(({ data }) => {
             const newToken = data.accessToken;
             setAccessToken(newToken);
@@ -104,7 +100,7 @@ api.interceptors.response.use(
             console.error('[API Interceptor] Token refresh failed. Redirecting user to session clear...', refreshError);
             setAccessToken(null);
             if (typeof window !== 'undefined') {
-              localStorage.removeItem('mm_test_refresh_token');
+              localStorage.removeItem('mm_test_refresh_token'); // Clean up old tokens from legacy sessions
               localStorage.removeItem('mm_test_event_id');
               localStorage.removeItem('mm_test_event');
               window.location.href = '/';

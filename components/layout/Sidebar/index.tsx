@@ -33,6 +33,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ token, logout, isOpen, onClose
     if (path === '/') {
       return pathname === '/';
     }
+    if (path === '/events') {
+      return pathname === '/events' || pathname === '/events/';
+    }
     return pathname.startsWith(path);
   };
 
@@ -43,6 +46,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ token, logout, isOpen, onClose
       icon: (
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Registered Events',
+      path: '/events/all',
+      icon: (
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
         </svg>
       ),
     },

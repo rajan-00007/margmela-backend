@@ -109,44 +109,76 @@ export const StatusDivider = styled.div`
   }
 `;
 
-export const EventBadge = styled.span`
-  display: flex;
+export const DropdownWrapper = styled.div`
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #818cf8;
-  background: rgba(99, 102, 241, 0.08);
+`;
+
+export const EventSelectorSelect = styled.select`
+  appearance: none;
+  background: rgba(20, 20, 23, 0.4);
   border: 1px solid rgba(99, 102, 241, 0.2);
-  padding: 3px 10px;
-  border-radius: 6px;
-  max-width: 180px;
+  color: #818cf8;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 36px 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 
+  &:hover {
+    border-color: rgba(99, 102, 241, 0.5);
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  &:focus {
+    border-color: #818cf8;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  }
+
+  option {
+    background: #09090b;
+    color: #a1a1aa;
+    font-weight: 500;
+    padding: 8px;
+  }
+
   @media (max-width: ${props => props.theme.breakpoints.mobile}) {
     font-size: 11px;
-    padding: 3px 8px;
-    max-width: 130px;
+    padding: 6px 28px 6px 8px;
+    max-width: 140px;
   }
 `;
 
-export const EventIndicator = styled.span`
-  height: 6px;
-  width: 6px;
-  border-radius: 50%;
-  background: #818cf8;
-  box-shadow: 0 0 6px #818cf8;
-  animation: ${pulse} 2s infinite ease-in-out;
-  flex-shrink: 0;
-`;
+export const DropdownArrow = styled.div`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
 
-export const NoEventText = styled.span`
-  font-size: 12px;
-  color: #f59e0b;
-  font-style: italic;
-  font-weight: 500;
+  svg {
+    height: 12px;
+    width: 12px;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.mobile}) {
+    right: 8px;
+    svg {
+      height: 10px;
+      width: 10px;
+    }
+  }
 `;
 
 export const SessionGroup = styled.div`

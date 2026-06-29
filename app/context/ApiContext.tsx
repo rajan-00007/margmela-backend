@@ -14,6 +14,11 @@ interface ApiContextType {
   apiFetch: (endpoint: string, options?: RequestInit) => Promise<any>;
   logout: () => void;
   loading: boolean;
+  events: any[];
+  setEvents: React.Dispatch<React.SetStateAction<any[]>>;
+  eventsLoading: boolean;
+  fetchEvents: () => Promise<void>;
+  eventsError: string;
 }
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
@@ -22,8 +27,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [backendUrl, setBackendUrlState] = useState(process.env.NEXT_PUBLIC_API_URL || 'https://api-wp-events.infoviz.co');
   const [token, setTokenState] = useState('');
   const [selectedEventId, setSelectedEventIdState] = useState('');
-  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
+  const [selectedEvent, setSelectedEventState] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<any[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsError, setEventsError] = useState('');
 
   // Load from localStorage on mount and attempt silent token refresh
   useEffect(() => {
@@ -38,6 +46,9 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           localStorage.removeItem('mm_test_backend_url');
           storedUrl = null;
         }
+        
+        // Proactively wipe any legacy refresh tokens that might be stuck in the browser
+        localStorage.removeItem('mm_test_refresh_token');
 
         if (storedUrl) {
           setBackendUrlState(storedUrl);
@@ -48,7 +59,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (storedEventId) setSelectedEventIdState(storedEventId);
         if (storedEvent) {
           try {
-            setSelectedEvent(JSON.parse(storedEvent));
+            setSelectedEventState(JSON.parse(storedEvent));
           } catch (_) {
             // ignore
           }
@@ -56,14 +67,10 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       try {
-        // Silently restore access token from the HTTP-only refresh cookie or storage
-        let storedRefreshToken = '';
-        if (typeof window !== 'undefined') {
-          storedRefreshToken = localStorage.getItem('mm_test_refresh_token') || '';
-        }
+        // Silently restore access token from the HTTP-only refresh cookie
         const response = await axios.post(
           `${activeUrl}/api/auth/refresh-token`,
-          { refreshToken: storedRefreshToken },
+          {},
           { withCredentials: true }
         );
         const data = response.data;
@@ -101,7 +108,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateSelectedEvent = (event: any | null) => {
-    setSelectedEvent(event);
+    setSelectedEventState(event);
     setSelectedEventIdState(event ? event.id : '');
     if (typeof window !== 'undefined') {
       if (event) {
@@ -124,20 +131,16 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (!activeUrl) {
         activeUrl = process.env.NEXT_PUBLIC_API_URL || 'https://api-wp-events.infoviz.co';
       }
-      let storedRefreshToken = '';
-      if (typeof window !== 'undefined') {
-        storedRefreshToken = localStorage.getItem('mm_test_refresh_token') || '';
-      }
-      await axios.post(`${activeUrl}/api/auth/logout`, { refreshToken: storedRefreshToken }, { withCredentials: true });
+      await axios.post(`${activeUrl}/api/auth/logout`, {}, { withCredentials: true });
     } catch (err) {
       console.error('[ApiContext] Logout request failed:', err);
     } finally {
       setTokenState('');
       setAccessToken(null); // Clear Axios in-memory active token
       setSelectedEventIdState('');
-      setSelectedEvent(null);
+      setSelectedEventState(null);
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('mm_test_refresh_token');
+        localStorage.removeItem('mm_test_refresh_token'); // Clean up old tokens from legacy sessions
         localStorage.removeItem('mm_test_event_id');
         localStorage.removeItem('mm_test_event');
       }
@@ -172,7 +175,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         method,
         data: body,
         headers,
-      });
+      }) as any;
       return response;
     } catch (err: any) {
       // Re-throw formatted errors to align with fetch catch behaviors
@@ -186,6 +189,41 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       throw new Error(errorMsg);
     }
   };
+
+  const fetchEvents = async () => {
+    if (!token) return;
+    setEventsLoading(true);
+    setEventsError('');
+    try {
+      const response = (await apiFetch('/api/events')) as any;
+      if (response && response.success) {
+        const list = response.data || [];
+        setEvents(list);
+        
+        // Refresh selected event context if it still exists in the database list
+        if (selectedEvent) {
+          const freshSelected = list.find((e: any) => e.id === selectedEvent.id);
+          if (freshSelected) {
+            setSelectedEventState(freshSelected);
+          }
+        }
+      } else {
+        throw new Error('API query succeeded but returned no event list');
+      }
+    } catch (err: any) {
+      setEventsError(err.message || 'Failed to fetch events list');
+    } finally {
+      setEventsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      fetchEvents();
+    } else {
+      setEvents([]);
+    }
+  }, [token]);
 
   return (
     <ApiContext.Provider
@@ -201,6 +239,11 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         apiFetch,
         logout,
         loading,
+        events,
+        setEvents,
+        eventsLoading,
+        fetchEvents,
+        eventsError,
       }}
     >
       {children}

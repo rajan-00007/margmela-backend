@@ -92,8 +92,9 @@ export default function LoginPage() {
       });
 
       if (data.accessToken) {
-        if (typeof window !== 'undefined' && data.refreshToken) {
-          localStorage.setItem('mm_test_refresh_token', data.refreshToken);
+        if (typeof window !== 'undefined') {
+          // Proactively wipe any old tokens so they disappear from DevTools
+          localStorage.removeItem('mm_test_refresh_token');
         }
         setToken(data.accessToken);
         setSuccessMsg('Successfully authenticated!');

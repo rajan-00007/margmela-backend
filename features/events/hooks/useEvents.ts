@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react';
 import { useApi } from '../../../app/context/ApiContext';
 
 export const useEvents = () => {
-  const { apiFetch, selectedEvent, setSelectedEvent } = useApi();
+  const {
+    apiFetch,
+    selectedEvent,
+    setSelectedEvent,
+    events,
+    eventsLoading: loading,
+    fetchEvents,
+    eventsError,
+  } = useApi();
 
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -26,10 +32,22 @@ export const useEvents = () => {
   const [bboxLoading, setBboxLoading] = useState(false);
   const [showBboxMap, setShowBboxMap] = useState(false);
 
+  const handleFetchEvents = async () => {
+    setError('');
+    await fetchEvents();
+  };
+
   // Load registered events list on mount
   useEffect(() => {
-    fetchEvents();
+    handleFetchEvents();
   }, []);
+
+  // Sync global eventsError to local error
+  useEffect(() => {
+    if (eventsError) {
+      setError(eventsError);
+    }
+  }, [eventsError]);
 
   // Pre-fill bounding box fields when selected event changes
   useEffect(() => {
@@ -43,31 +61,6 @@ export const useEvents = () => {
       setVisibilityRadius(meta.visibility !== undefined ? String(meta.visibility) : '0');
     }
   }, [selectedEvent]);
-
-  const fetchEvents = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await apiFetch('/api/events');
-      if (response && response.success) {
-        setEvents(response.data || []);
-        
-        // Refresh selected event context if it still exists in the database list
-        if (selectedEvent) {
-          const freshSelected = (response.data || []).find((e: any) => e.id === selectedEvent.id);
-          if (freshSelected) {
-            setSelectedEvent(freshSelected);
-          }
-        }
-      } else {
-        throw new Error('API query succeeded but returned no event list');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch events list');
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,6 +193,6 @@ export const useEvents = () => {
     setShowBboxMap,
     handleUpdateBBox,
     captureBbox,
-    fetchEvents,
+    fetchEvents: handleFetchEvents,
   };
 };

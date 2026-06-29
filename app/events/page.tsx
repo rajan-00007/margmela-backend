@@ -98,165 +98,87 @@ export default function EventsManager() {
         </PageSubtitle>
       </HeaderSection>
 
-      <GridContainer>
-        {/* Create Event Card */}
-        <Card $glow>
-          <Card.Header>
-            <SectionHeader>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Create Test Event
-            </SectionHeader>
-          </Card.Header>
-          
-          <Card.Body>
-            <Form onSubmit={handleCreateEvent}>
-              <Input
-                label="Event Name *"
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Bali Jatra 2026"
+      {/* Create Event Card */}
+      <Card $glow>
+        <Card.Header>
+          <SectionHeader>
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Create Test Event
+          </SectionHeader>
+        </Card.Header>
+        
+        <Card.Body>
+          <Form onSubmit={handleCreateEvent}>
+            <Input
+              label="Event Name *"
+              type="text"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Bali Jatra 2026"
+            />
+
+            <FormGroupWrapper>
+              <LabelText>Description</LabelText>
+              <TextArea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Brief event overview..."
+                rows={2}
               />
+            </FormGroupWrapper>
 
-              <FormGroupWrapper>
-                <LabelText>Description</LabelText>
-                <TextArea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief event overview..."
-                  rows={2}
-                />
-              </FormGroupWrapper>
-
-              <FormRow>
-                <Input
-                  label="Start Date"
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  $fontMono
-                />
-                <Input
-                  label="End Date"
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  $fontMono
-                />
-              </FormRow>
-
+            <FormRow>
               <Input
-                label="Logo Image URL"
-                type="url"
-                value={logoUrl}
-                onChange={(e) => setLogoUrl(e.target.value)}
-                placeholder="https://example.com/logo.png"
+                label="Start Date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
                 $fontMono
               />
-
               <Input
-                label="Visibility Radius (KM) *"
-                type="number"
-                min="0"
-                required
-                value={visibilityRadius}
-                onChange={(e) => setVisibilityRadius(e.target.value)}
-                placeholder="0 for unlimited visibility"
+                label="End Date"
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
                 $fontMono
               />
+            </FormRow>
 
-              <Button
-                type="submit"
-                loading={formLoading}
-                disabled={formLoading || !name}
-                $variant="primary"
-                $fullWidth
-              >
-                Add New Event
-              </Button>
-            </Form>
-          </Card.Body>
-        </Card>
+            <Input
+              label="Logo Image URL"
+              type="url"
+              value={logoUrl}
+              onChange={(e) => setLogoUrl(e.target.value)}
+              placeholder="https://example.com/logo.png"
+              $fontMono
+            />
 
-        {/* Registered Events Card */}
-        <Card>
-          <Card.Header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <SectionHeader style={{ borderBottom: 'none', paddingBottom: 0 }}>
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-              </svg>
-              Registered Events ({events.length})
-            </SectionHeader>
-            <Button $variant="secondary" $size="sm" onClick={fetchEvents}>
-              Refresh List
+            <Input
+              label="Visibility Radius (KM) *"
+              type="number"
+              min="0"
+              required
+              value={visibilityRadius}
+              onChange={(e) => setVisibilityRadius(e.target.value)}
+              placeholder="0 for unlimited visibility"
+              $fontMono
+            />
+
+            <Button
+              type="submit"
+              loading={formLoading}
+              disabled={formLoading || !name}
+              $variant="primary"
+              $fullWidth
+            >
+              Add New Event
             </Button>
-          </Card.Header>
-
-          <Card.Body>
-            {loading ? (
-              <LoadingState>
-                <SpinnerOverlay />
-                <p>Fetching backend events...</p>
-              </LoadingState>
-            ) : events.length === 0 ? (
-              <EmptyState>
-                <p>No events found on this database.</p>
-                <p className="subtext">Use the panel on the left to add one.</p>
-              </EmptyState>
-            ) : (
-              <EventsListContainer>
-                {events.map((evt) => {
-                  const isActive = selectedEvent?.id === evt.id;
-                  const radiusValue = evt.metadata?.visibility;
-                  return (
-                    <EventCard
-                      key={evt.id}
-                      $isActive={isActive}
-                      onClick={() => setSelectedEvent(evt)}
-                    >
-                      <EventInfo>
-                        <EventTitleRow>
-                          <StatusDot $published={evt.status === 'published'} />
-                          <EventTitle>{evt.name}</EventTitle>
-                          <Badge>{evt.status}</Badge>
-                        </EventTitleRow>
-                        
-                        {evt.description && (
-                          <EventDescription>{evt.description}</EventDescription>
-                        )}
-
-                        <EventMetaRow>
-                          <MetaItem>
-                            <strong>Slug:</strong> {evt.slug}
-                          </MetaItem>
-                          <MetaItem>
-                            <strong>Ver:</strong> {evt.bundle_version || 0}
-                          </MetaItem>
-                          <MetaItem>
-                            <strong>Route Map:</strong> {evt.has_route_graph ? '✅ Created' : '❌ Empty'}
-                          </MetaItem>
-                          <MetaItem>
-                            <strong>Visibility:</strong> {radiusValue ? `📍 ${radiusValue} KM` : '🌍 Unlimited'}
-                          </MetaItem>
-                        </EventMetaRow>
-                      </EventInfo>
-
-                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                        <EventSelectBadge $isActive={isActive}>
-                          {isActive ? '✨ Selected Active' : 'Select'}
-                        </EventSelectBadge>
-                      </div>
-                    </EventCard>
-                  );
-                })}
-              </EventsListContainer>
-            )}
-          </Card.Body>
-        </Card>
-      </GridContainer>
+          </Form>
+        </Card.Body>
+      </Card>
 
       {/* Active Event Bounding Box Limits Section */}
       <Card>
@@ -384,7 +306,7 @@ export default function EventsManager() {
             </div>
           ) : (
             <div style={{ padding: '24px', textAlign: 'center', fontSize: '13px', fontStyle: 'italic', color: '#71717a', border: '1px dashed #27272a', borderRadius: '12px', background: 'rgba(255,255,255,0.01)' }}>
-              ⚠️ Select an event in the list above to view and update its Bounding Box boundaries.
+              ⚠️ Select an active event from the header dropdown to view and update its Bounding Box boundaries.
             </div>
           )}
         </Card.Body>

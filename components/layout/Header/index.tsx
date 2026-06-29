@@ -1,15 +1,16 @@
 'use client';
 
 import React from 'react';
+import { useApi } from '../../../app/context/ApiContext';
 import {
   HeaderContainer,
   StatusGroup,
   HamburgerButton,
   StatusItem,
   Label,
-  EventBadge,
-  EventIndicator,
-  NoEventText,
+  DropdownWrapper,
+  EventSelectorSelect,
+  DropdownArrow,
   SessionGroup,
   SessionBadge,
 } from './styled';
@@ -22,6 +23,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ backendUrl, selectedEvent, token, onToggleSidebar }) => {
+  const { events, setSelectedEvent } = useApi();
+
   return (
     <HeaderContainer>
       <StatusGroup>
@@ -33,14 +36,34 @@ export const Header: React.FC<HeaderProps> = ({ backendUrl, selectedEvent, token
 
         <StatusItem>
           <Label className="event-label">Active:</Label>
-          {selectedEvent ? (
-            <EventBadge>
-              <EventIndicator />
-              <span>{selectedEvent.name}</span>
-            </EventBadge>
-          ) : (
-            <NoEventText>None selected</NoEventText>
-          )}
+          <DropdownWrapper>
+            <EventSelectorSelect
+              value={selectedEvent?.id || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (!val) {
+                  setSelectedEvent(null);
+                } else {
+                  const found = events.find((evt: any) => evt.id === val);
+                  if (found) {
+                    setSelectedEvent(found);
+                  }
+                }
+              }}
+            >
+              <option value="">Select Event...</option>
+              {events && events.map((evt: any) => (
+                <option key={evt.id} value={evt.id}>
+                  {evt.name}
+                </option>
+              ))}
+            </EventSelectorSelect>
+            <DropdownArrow>
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              </svg>
+            </DropdownArrow>
+          </DropdownWrapper>
         </StatusItem>
       </StatusGroup>
 
