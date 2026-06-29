@@ -43,4 +43,8 @@ export const API_ENDPOINTS = {
     byId: (id: string) => `${BASE_URL}/api/highlights/${id}`,
     upload: (eventId: string) => `${BASE_URL}/api/events/${eventId}/highlights/upload`,
   },
+  feedback: {
+    base: `${BASE_URL}/api/feedback`,
+    byId: (id: string) => `${BASE_URL}/api/feedback/${id}`,
+  },
 } as const;
